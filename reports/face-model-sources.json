@@ -1,0 +1,5 @@
+{
+  "79999_iter.pth": "https://drive.google.com/uc?id=154JgKpzCPW82qINcVieuPH3fZ2e0P812",
+  "resnet18-5c106cde.pth": "https://download.pytorch.org/models/resnet18-5c106cde.pth",
+  "reference": "vendor/musetalk-mac/download_weights_mac.sh"
+}

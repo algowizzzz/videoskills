@@ -1,0 +1,27 @@
+[
+  {
+    "repo": "TMElyralab/MuseTalk",
+    "revision": "3ef28bc5cff08c90ad8178a25f1b570cd800170f",
+    "files": [
+      "musetalkV15/musetalk.json",
+      "musetalkV15/unet.pth"
+    ]
+  },
+  {
+    "repo": "stabilityai/sd-vae-ft-mse",
+    "revision": "31f26fdeee1355a5c34592e401dd41e45d25a493",
+    "files": [
+      "config.json",
+      "diffusion_pytorch_model.bin"
+    ]
+  },
+  {
+    "repo": "openai/whisper-tiny",
+    "revision": "169d4a4341b33bc18d8881c4b69c2e104e1cc0af",
+    "files": [
+      "config.json",
+      "pytorch_model.bin",
+      "preprocessor_config.json"
+    ]
+  }
+]

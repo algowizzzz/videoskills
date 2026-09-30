@@ -1,0 +1,61 @@
+diff --git a/upstream/scripts/inference.py b/upstream/scripts/inference.py
+index 45d1351..9bf9098 100644
+--- a/upstream/scripts/inference.py
++++ b/upstream/scripts/inference.py
+@@ -18,7 +18,10 @@ from musetalk.utils.blending import get_image
+ from musetalk.utils.face_parsing import FaceParsing
+ from musetalk.utils.audio_processor import AudioProcessor
+ from musetalk.utils.utils import get_file_type, get_video_fps, datagen, load_all_model
+-from musetalk.utils.preprocessing import get_landmark_and_bbox, read_imgs, coord_placeholder
++if os.environ.get("FACE_DETECTOR") == "yunet":
++    from musetalk.utils.preprocessing_cpu import get_landmark_and_bbox, read_imgs, coord_placeholder
++else:
++    from musetalk.utils.preprocessing import get_landmark_and_bbox, read_imgs, coord_placeholder
+ 
+ def fast_check_ffmpeg():
+     try:
+@@ -126,8 +129,8 @@ def main(args):
+             if get_file_type(video_path) == "video":
+                 save_dir_full = os.path.join(temp_dir, input_basename)
+                 os.makedirs(save_dir_full, exist_ok=True)
+-                cmd = f"ffmpeg -v fatal -i {video_path} -start_number 0 {save_dir_full}/%08d.png"
+-                os.system(cmd)
++                subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", video_path,
++                                "-start_number", "0", f"{save_dir_full}/%08d.png"], check=True)
+                 input_img_list = sorted(glob.glob(os.path.join(save_dir_full, '*.[jpJP][pnPN]*[gG]')))
+                 fps = get_video_fps(video_path)
+             elif get_file_type(video_path) == "image":
+@@ -236,23 +239,30 @@ def main(args):
+             temp_vid_path = f"{temp_dir}/temp_{input_basename}_{audio_basename}.mp4"
+             cmd_img2video = f"ffmpeg -y -v warning -r {fps} -f image2 -i {result_img_save_path}/%08d.png -vcodec libx264 -vf format=yuv420p -crf 18 {temp_vid_path}"
+             print("Video generation command:", cmd_img2video)
+-            os.system(cmd_img2video)   
++            subprocess.run(["ffmpeg", "-y", "-v", "warning", "-r", str(fps),
++                            "-f", "image2", "-i", f"{result_img_save_path}/%08d.png",
++                            "-vcodec", "libx264", "-vf", "format=yuv420p", "-crf", "18",
++                            temp_vid_path], check=True)
+             
+             cmd_combine_audio = f"ffmpeg -y -v warning -i {audio_path} -i {temp_vid_path} {output_vid_name}"
+             print("Audio combination command:", cmd_combine_audio) 
+-            os.system(cmd_combine_audio)
++            subprocess.run(["ffmpeg", "-y", "-v", "warning", "-i", audio_path,
++                            "-i", temp_vid_path, "-c:v", "copy", "-c:a", "aac",
++                            "-shortest", output_vid_name], check=True)
+             
+             # Clean up temporary files
+             shutil.rmtree(result_img_save_path)
+             os.remove(temp_vid_path)
+             
+-            shutil.rmtree(save_dir_full)
++            if get_file_type(video_path) == "video":
++                shutil.rmtree(save_dir_full)
+             if not args.saved_coord:
+                 os.remove(crop_coord_save_path)
+                     
+             print(f"Results saved to {output_vid_name}")
+         except Exception as e:
+             print("Error occurred during processing:", e)
++            raise
+ 
+ if __name__ == "__main__":
+     parser = argparse.ArgumentParser()

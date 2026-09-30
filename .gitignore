@@ -1,0 +1,11 @@
+.venv/
+.venv-video/
+.runtime/
+vendor/
+models/
+inputs/
+outputs/
+__pycache__/
+.DS_Store
+*.part
+*.partial
